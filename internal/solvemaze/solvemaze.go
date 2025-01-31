@@ -1,0 +1,51 @@
+package solvemaze
+
+import (
+	"mazesolver/internal/getmaze"
+)
+
+func FindPath(maze getMaze.Maze) []getMaze.Point {
+    returnSlice := make([]getMaze.Point, 0)
+    debugMaze := GetDebugMaze(maze)
+    findPathRecursive(maze[1][1], maze, &returnSlice, debugMaze)
+    return returnSlice
+}
+
+func findPathRecursive(next getMaze.Point, maze getMaze.Maze, slice *[]getMaze.Point, debugMaze getMaze.Maze) bool {
+    maze[next.Y][next.X].Value = -1
+    debugMaze[next.Y][next.X].Value = 1
+    for _, v := range getAdjacent(next, maze) {
+        switch v.Value {
+        case -1:
+            continue
+        case 5:
+            continue
+        case 0:
+            if (findPathRecursive(v, maze, slice, debugMaze)) {
+                *slice = append(*slice, v)
+                return true
+            }
+        case 9:
+            *slice = append(*slice, v)
+            return true
+        }
+    }
+    return false
+}
+
+func getAdjacent(point getMaze.Point, maze getMaze.Maze) []getMaze.Point {
+    returnSlice := make([]getMaze.Point, 0)
+    returnSlice = append(returnSlice, maze[point.Y + 1][point.X])
+    returnSlice = append(returnSlice, maze[point.Y - 1][point.X])
+    returnSlice = append(returnSlice, maze[point.Y][point.X + 1])
+    returnSlice = append(returnSlice, maze[point.Y][point.X - 1])
+    return returnSlice
+}
+
+func GetDebugMaze(maze getMaze.Maze) getMaze.Maze {
+    a := make(getMaze.Maze, len(maze))
+    for i := range a {
+        a[i] = make([]getMaze.Point, len(maze[0]))
+    }
+    return a
+}
