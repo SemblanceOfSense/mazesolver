@@ -3,6 +3,7 @@ package getMaze
 import (
 	"errors"
 	"fmt"
+	"image"
 	"image/color"
 	"image/png"
 	"io"
@@ -59,9 +60,10 @@ func GetMaze(imagepath string) (Maze, error) {
         return *new(Maze), err
     }
 
-    for y := image.Bounds().Min.Y; y < image.Bounds().Max.Y; y += 10 {
+    psize := DeterminePixelSize(image)
+    for y := image.Bounds().Min.Y; y < image.Bounds().Max.Y; y += psize {
         newRow := make([]Point, 0)
-        for x := image.Bounds().Min.X; x < image.Bounds().Max.X; x+= 10 {
+        for x := image.Bounds().Min.X; x < image.Bounds().Max.X; x+= psize {
             typ := 0
             switch image.At(x, y) {
             case color.RGBA{ R: 255, G: 0, B: 0, A: 255 }:
@@ -77,8 +79,8 @@ func GetMaze(imagepath string) (Maze, error) {
                 return *new(Maze), errors.New("bad color")
             }
             newPoint := Point{
-                X: x / 10,
-                Y: y / 10,
+                X: x / psize,
+                Y: y / psize,
                 Value: typ,
             }
             newRow = append(newRow, newPoint)
@@ -99,4 +101,13 @@ func PrintMaze(maze Maze) {
         }
         fmt.Println("]")
     }
+}
+
+func DeterminePixelSize(image image.Image) int {
+    var x, y int
+    color := image.At(x, y)
+    for (color == image.At(x, y)) {
+        x++
+    }
+    return x
 }
