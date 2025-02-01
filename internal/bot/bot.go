@@ -62,6 +62,8 @@ func Run(BotToken string) {
                             responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
                         } else {
                             outputmaze.EditMaze(points, "/tmp/maze.png", "/tmp/outputmaze.png")
+                            maze = nil
+                            points = nil
             }}}}
 
             if responseData == "" {
@@ -130,6 +132,8 @@ func Run(BotToken string) {
                             if err != nil {
                                 s.ChannelMessageSendReply(m.ChannelID, "server error", m.Reference())
                             }
+                            maze = nil
+                            points = nil
                             f, _ := os.Open("/tmp/outputmaze.png")
                             _, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
                                 Files: []*discordgo.File{
