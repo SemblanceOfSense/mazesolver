@@ -64,18 +64,7 @@ func Run(BotToken string) {
                             outputmaze.EditMaze(points, "/tmp/maze.png", "/tmp/outputmaze.png")
             }}}}
 
-            if responseData != "" {
-                err = s.InteractionRespond(
-                    i.Interaction,
-                    &discordgo.InteractionResponse{
-                        Type: discordgo.InteractionResponseChannelMessageWithSource,
-                        Data: &discordgo.InteractionResponseData{
-                            Flags: 1 << 6,
-                            Content: responseData,
-                        },
-                    },
-                )
-            } else {
+            if responseData == "" {
                 fileName := "/tmp/outputmaze.png"
                 f, _ := os.Open(fileName)
                 defer f.Close()
@@ -93,12 +82,27 @@ func Run(BotToken string) {
                         },
                     },
                 )
-            }
-            if err != nil {
-                fmt.Println(err)
+                if err != nil {
+                    if strings.Contains(err.Error(), "413") {
+                        responseData = "Solution file is too large!"
+                    } else {
+                        responseData = err.Error()
+                    }
+                }
+            if responseData != "" {
+                err = s.InteractionRespond(
+                    i.Interaction,
+                    &discordgo.InteractionResponse{
+                        Type: discordgo.InteractionResponseChannelMessageWithSource,
+                        Data: &discordgo.InteractionResponseData{
+                            Flags: 1 << 6,
+                            Content: responseData,
+                        },
+                    },
+                )
             }
         }
-    })
+    }})
 
     discord.AddHandler(func (
         s *discordgo.Session,
@@ -141,7 +145,11 @@ func Run(BotToken string) {
                                 },
                             })
                             if err != nil {
-                                fmt.Println(err)
+                                if strings.Contains(err.Error(), "413") {
+                                    s.ChannelMessageSendReply(m.ChannelID, "Solution file is too large!", m.Reference())
+                                } else {
+                                    s.ChannelMessageSendReply(m.ChannelID, err.Error(), m.Reference())
+                                }
                             }
                         }
                     }

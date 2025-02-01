@@ -22,7 +22,8 @@ Pixel types:
 type Point struct {
     X int;
     Y int;
-    Value int
+    Value int;
+    Parent *Point
 }
 
 type Maze [][]Point
