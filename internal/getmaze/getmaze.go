@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"image/color"
 	"image/png"
+	"io"
+	"net/http"
 	"os"
 )
 
@@ -27,13 +29,33 @@ type Maze [][]Point
 func GetMaze(imagepath string) (Maze, error) {
     returnMaze := *new(Maze)
 
-    imagereader, err := os.Open(imagepath)
+    res, err := http.Get(imagepath)
+
     if err != nil {
-        return *new(Maze), err
+        return returnMaze, err
+    }
+
+    data, err := io.ReadAll(res.Body)
+
+    if err != nil {
+        return returnMaze, err
+    }
+
+    defer res.Body.Close()
+
+    err = os.WriteFile("/tmp/maze.png", data, 0755)
+    if err != nil {
+        return returnMaze, err
+    }
+
+    imagereader, err := os.Open("/tmp/maze.png")
+    if err != nil {
+        return returnMaze, err
     }
 
     image, err := png.Decode(imagereader)
     if err != nil {
+        fmt.Println("Here")
         return *new(Maze), err
     }
 
