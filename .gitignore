@@ -1,3 +1,5 @@
 testing/
 bin/
 start.sh
+crash.txt
+log.out
