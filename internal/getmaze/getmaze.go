@@ -56,14 +56,14 @@ func GetMaze(imagepath string) (Maze, error) {
 
     image, err := png.Decode(imagereader)
     if err != nil {
-        fmt.Println("Here")
         return *new(Maze), err
     }
 
     psize := DeterminePixelSize(image)
     for y := image.Bounds().Min.Y; y < image.Bounds().Max.Y; y += psize {
         newRow := make([]Point, 0)
-        for x := image.Bounds().Min.X; x < image.Bounds().Max.X; x+= psize {
+        for x := image.Bounds().Min.X; x < image.Bounds().Max.X; x += psize {
+            fmt.Print(x); fmt.Print(" "); fmt.Println(y)
             typ := 0
             switch image.At(x, y) {
             case color.RGBA{ R: 255, G: 0, B: 0, A: 255 }:
@@ -106,8 +106,12 @@ func PrintMaze(maze Maze) {
 func DeterminePixelSize(image image.Image) int {
     var x, y int
     color := image.At(x, y)
-    for (color == image.At(x, y)) {
+    for {
+        if color != image.At(x, y) {
+            break
+        }
         x++
+        y++
     }
     return x
 }

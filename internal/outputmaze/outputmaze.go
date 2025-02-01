@@ -40,8 +40,9 @@ type Changeable interface {
 }
 
 func updateColor(image image.Image, p getMaze.Point, color color.Color) error {
-    for i := p.Y * 10; i < p.Y * 10 + 10; i++ {
-        for ii := p.X * 10; ii < p.X * 10 + 10; ii++ {
+    psize := getMaze.DeterminePixelSize(image)
+    for i := p.Y * psize; i < p.Y * psize + psize; i++ {
+        for ii := p.X * psize; ii < p.X * psize + psize; ii++ {
             if cimg, ok := image.(Changeable); ok {
                 cimg.Set(ii, i, color)
             } else {
