@@ -63,7 +63,6 @@ func GetMaze(imagepath string) (Maze, error) {
     for y := image.Bounds().Min.Y; y < image.Bounds().Max.Y; y += psize {
         newRow := make([]Point, 0)
         for x := image.Bounds().Min.X; x < image.Bounds().Max.X; x += psize {
-            fmt.Print(x); fmt.Print(" "); fmt.Println(y)
             typ := 0
             switch image.At(x, y) {
             case color.RGBA{ R: 255, G: 0, B: 0, A: 255 }:
