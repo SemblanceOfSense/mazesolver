@@ -50,8 +50,19 @@ func Run(BotToken string) {
 
             switch data.Name {
             case "solve-maze":
-
-            }
+                maze, err := getMaze.GetMaze(i.ApplicationCommandData().Options[0].Value.(string))
+                if err != nil {
+                    responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
+                } else {
+                    if (len(maze) < 1) {
+                        responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
+                    } else {
+                        points := solvemaze.FindPath(maze)
+                        if (len(points) < 1) {
+                            responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
+                        } else {
+                            outputmaze.EditMaze(points, "/tmp/maze.png", "/tmp/outputmaze.png")
+            }}}}
 
             if responseData != "" {
                 err = s.InteractionRespond(
