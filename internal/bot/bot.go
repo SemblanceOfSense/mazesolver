@@ -8,6 +8,7 @@ import (
 	"mazesolver/internal/solvemaze"
 	"os"
 	"os/signal"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -28,7 +29,7 @@ func Run(BotToken string) {
             Options: []*discordgo.ApplicationCommandOption {
                     {
                         Type: discordgo.ApplicationCommandOptionString,
-                        Name: "image-link",
+                        Name: "message-link",
                         Description: "link to maze image",
                         Required: true,
                     },
@@ -49,19 +50,8 @@ func Run(BotToken string) {
 
             switch data.Name {
             case "solve-maze":
-                maze, err := getMaze.GetMaze(i.ApplicationCommandData().Options[0].Value.(string))
-                if err != nil {
-                    responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
-                } else {
-                    if (len(maze) < 1) {
-                        responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
-                    } else {
-                        points := solvemaze.FindPath(maze)
-                        if (len(points) < 1) {
-                            responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
-                        } else {
-                            outputmaze.EditMaze(points, "/tmp/maze.png", "/tmp/outputmaze.png")
-            }}}}
+
+            }
 
             if responseData != "" {
                 err = s.InteractionRespond(
@@ -74,37 +64,78 @@ func Run(BotToken string) {
                         },
                     },
                 )
-            }
-            fileName := "/tmp/outputmaze.png"
-			f, err := os.Open(fileName)
-			defer f.Close()
-            err = s.InteractionRespond(
-                i.Interaction,
-                &discordgo.InteractionResponse{
-                    Type: discordgo.InteractionResponseChannelMessageWithSource,
-                    Data: &discordgo.InteractionResponseData{
-                            Files: []*discordgo.File{
-                            &discordgo.File{
-                                Name:  fileName,
-                                Reader: f,
+            } else {
+                fileName := "/tmp/outputmaze.png"
+                f, _ := os.Open(fileName)
+                defer f.Close()
+                err = s.InteractionRespond(
+                    i.Interaction,
+                    &discordgo.InteractionResponse{
+                        Type: discordgo.InteractionResponseChannelMessageWithSource,
+                        Data: &discordgo.InteractionResponseData{
+                                Files: []*discordgo.File{
+                                &discordgo.File{
+                                    Name:  fileName,
+                                    Reader: f,
+                                },
                             },
                         },
                     },
-                },
-            )
+                )
+            }
             if err != nil {
                 fmt.Println(err)
             }
         }
     })
 
-    discord.AddHandler( func(
+    discord.AddHandler(func (
         s *discordgo.Session,
         m *discordgo.MessageCreate,
     ) {
-        listOfGuilds := discord.State.Guilds
-        for _, v := range listOfGuilds {
-            fmt.Println(v.Name)
+        if (m.Content == "-solve") {
+            if (m.MessageReference == nil) {
+                s.ChannelMessageSendReply(m.ChannelID, "Please reply to a message with a maze", m.Reference())
+            } else {
+                reply, err := s.ChannelMessage(m.MessageReference.ChannelID, m.MessageReference.MessageID)
+                if (err != nil) {
+                    s.ChannelMessageSendReply(m.ChannelID, "Please reply to a message with a maze", m.Reference())
+                } else {
+                    if (len(reply.Attachments) < 1) {
+                        s.ChannelMessageSendReply(m.ChannelID, "Reply does not contain a maze", m.Reference())
+                    } else if (len(reply.Attachments) > 1) {
+                        s.ChannelMessageSendReply(m.ChannelID, "Too many images!", m.Reference())
+                    } else {
+                        maze, err := getMaze.GetMaze(reply.Attachments[0].URL)
+                        if (err != nil) {
+                            s.ChannelMessageSendReply(m.ChannelID, "Send a valid maze", m.Reference())
+                        } else {
+                            points := solvemaze.FindPath(maze)
+                            _, err := outputmaze.EditMaze(points, "/tmp/maze.png", "/tmp/outputmaze.png")
+                            if err != nil {
+                                s.ChannelMessageSendReply(m.ChannelID, "server error", m.Reference())
+                            }
+                            f, _ := os.Open("/tmp/outputmaze.png")
+                            _, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+                                Files: []*discordgo.File{
+                                    {
+                                        Name: "/tmp/outputmaze.png",
+                                        Reader: f,
+                                    },
+                                },
+                                Reference: &discordgo.MessageReference{
+                                    MessageID: m.Reference().MessageID,
+                                    ChannelID: m.Reference().ChannelID,
+                                    GuildID: m.Reference().GuildID,
+                                },
+                            })
+                            if err != nil {
+                                fmt.Println(err)
+                            }
+                        }
+                    }
+                }
+            }
         }
     })
 
@@ -118,4 +149,15 @@ func Run(BotToken string) {
 
     err = discord.Close()
     if err != nil { log.Fatal(err) }
+}
+
+func parseMessageLink(link string) (string, string, string, error) {
+	parts := strings.Split(link, "/")
+	if len(parts) < 7 {
+		return "", "", "", fmt.Errorf("invalid message link format")
+	}
+	guildID := parts[4]
+	channelID := parts[5]
+	messageID := parts[6]
+	return guildID, channelID, messageID, nil
 }
