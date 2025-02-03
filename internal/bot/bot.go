@@ -141,7 +141,7 @@ func Run(BotToken string) {
                             points = nil
                             f, _ := os.Open("/tmp/outputmaze.png")
                             _, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-                                Content: "length of solution is: " + solutionlength,
+                                Content: "Length of solution is: " + solutionlength,
                                 Files: []*discordgo.File{
                                     {
                                         Name: "/tmp/outputmaze.png",
