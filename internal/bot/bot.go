@@ -8,6 +8,7 @@ import (
 	"mazesolver/internal/solvemaze"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -48,6 +49,7 @@ func Run(BotToken string) {
             responseData := ""
             if i.Interaction.Member.User.ID == s.State.User.ID { return; }
 
+            var solutionlength string
             switch data.Name {
             case "solve-maze":
                 maze, err := getMaze.GetMaze(i.ApplicationCommandData().Options[0].Value.(string))
@@ -62,6 +64,7 @@ func Run(BotToken string) {
                             responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
                         } else {
                             outputmaze.EditMaze(points, "/tmp/maze.png", "/tmp/outputmaze.png")
+                            solutionlength = strconv.Itoa(len(points))
                             maze = nil
                             points = nil
             }}}}
@@ -75,6 +78,7 @@ func Run(BotToken string) {
                     &discordgo.InteractionResponse{
                         Type: discordgo.InteractionResponseChannelMessageWithSource,
                         Data: &discordgo.InteractionResponseData{
+                                Content: "Length of solution is: " + solutionlength,
                                 Files: []*discordgo.File{
                                 &discordgo.File{
                                     Name:  fileName,
@@ -132,10 +136,12 @@ func Run(BotToken string) {
                             if err != nil {
                                 s.ChannelMessageSendReply(m.ChannelID, "server error", m.Reference())
                             }
+                            solutionlength := strconv.Itoa(len(points))
                             maze = nil
                             points = nil
                             f, _ := os.Open("/tmp/outputmaze.png")
                             _, err = s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
+                                Content: "length of solution is: " + solutionlength,
                                 Files: []*discordgo.File{
                                     {
                                         Name: "/tmp/outputmaze.png",
