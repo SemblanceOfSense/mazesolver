@@ -67,14 +67,18 @@ func Run(BotToken string) {
                     var maze getMaze.Maze
                     if strings.Contains(messageUrl, "cdn") {
                         maze, err = getMaze.GetMaze(messageUrl)
-                    } else if err == nil && len(message.Attachments) < 1 {
-                        maze, err = getMaze.GetMaze(message.Content)
-                    } else if err == nil {
+                    } else if err == nil && len(message.Attachments) > 1 {
                         maze, err = getMaze.GetMaze(message.Attachments[0].URL)
+                    } else if err == nil {
+                        maze, err = getMaze.GetMaze(message.Content)
                     }
                     if err != nil {
                         fmt.Println(err)
-                        responseData = "You must provide a valid image! Provide the message link of a valid image."
+                        if strings.Contains(err.Error(), "403") {
+                            responseData = "Acess Denied"
+                        } else {
+                            responseData = "You must provide a valid image! Provide the message link of a valid image."
+                        }
                     } else {
                         if (len(maze) < 1) {
                             responseData = "You must provide a valid image! Provide the message link of a valid image."
