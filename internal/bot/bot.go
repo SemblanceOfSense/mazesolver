@@ -8,6 +8,7 @@ import (
 	"mazesolver/internal/solvemaze"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -53,25 +54,26 @@ func Run(BotToken string) {
             switch data.Name {
             case "solve-maze":
                 messageUrl := i.ApplicationCommandData().Options[0].Value.(string);
-                message, err := s.ChannelMessage(i.ChannelID, strings.Split(messageUrl, "/")[len(strings.Split(messageUrl, "/")) - 1]);
-                mazeFiles := message.Attachments;
+                if strings.Contains(messageUrl, "media.discordapp.net") {
+                    messageUrl = strings.Replace(messageUrl, "media.discordapp.net", "cdn.discordapp.com", 1)
+
+                    re := regexp.MustCompile(`(hm=[a-f0-9]+).*`)
+                    messageUrl = re.ReplaceAllString(messageUrl, `$1&`)
+                }
                 if err != nil {
                     fmt.Println(err)
-                    if !strings.Contains(messageUrl, "media") {
-                        responseData = "You must provide a valid image! Provide the message link of a valid image."
-                    }
                 } else {
+                    message, err := s.ChannelMessage(i.ChannelID, strings.Split(messageUrl, "/")[len(strings.Split(messageUrl, "/")) - 1]);
                     var maze getMaze.Maze
-                    if len(mazeFiles) < 1 {
-                        if !strings.Contains(messageUrl, "media") {
-                            maze, err = getMaze.GetMaze(message.Content)
-                        } else {
-                            maze, err = getMaze.GetMaze(messageUrl)
-                        }
-                    } else {
-                        maze, err = getMaze.GetMaze(mazeFiles[0].URL)
+                    if strings.Contains(messageUrl, "cdn") {
+                        maze, err = getMaze.GetMaze(messageUrl)
+                    } else if err == nil && len(message.Attachments) < 1 {
+                        maze, err = getMaze.GetMaze(message.Content)
+                    } else if err == nil {
+                        maze, err = getMaze.GetMaze(message.Attachments[0].URL)
                     }
                     if err != nil {
+                        fmt.Println(err)
                         responseData = "You must provide a valid image! Provide the message link of a valid image."
                     } else {
                         if (len(maze) < 1) {
@@ -141,14 +143,19 @@ func Run(BotToken string) {
                 if (err != nil) {
                     s.ChannelMessageSendReply(m.ChannelID, "Please reply to a message with a maze", m.Reference())
                 } else {
-                    if (len(reply.Attachments) < 1) {
-                        s.ChannelMessageSendReply(m.ChannelID, "Reply does not contain a maze", m.Reference())
-                    } else if (len(reply.Attachments) > 1) {
+                    messageUrl := reply.Content
+                    if strings.Contains(messageUrl, "media.discordapp.net") {
+                        messageUrl = strings.Replace(messageUrl, "media.discordapp.net", "cdn.discordapp.com", 1)
+
+                        re := regexp.MustCompile(`(hm=[a-f0-9]+).*`)
+                        messageUrl = re.ReplaceAllString(messageUrl, `$1&`)
+                    }
+                    if (len(reply.Attachments) > 1) {
                         s.ChannelMessageSendReply(m.ChannelID, "Too many images!", m.Reference())
                     } else {
                         var maze getMaze.Maze
                         if len(reply.Attachments) < 1 {
-                            maze, err = getMaze.GetMaze(reply.Content)
+                            maze, err = getMaze.GetMaze(messageUrl)
                         } else {
                             maze, err = getMaze.GetMaze(reply.Attachments[0].URL)
                         }
