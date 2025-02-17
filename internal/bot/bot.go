@@ -84,7 +84,7 @@ func Run(BotToken string) {
                     if err != nil {
                         fmt.Println(err)
                         if strings.Contains(err.Error(), "403") {
-                            responseData = "Acess Denied"
+                            responseData = "Acess Denied. The bot isn't added to this server. Use the image link instead of the message link."
                         } else {
                             responseData = "You must provide a valid image! Provide the message link of a valid image."
                         }
