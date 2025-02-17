@@ -52,22 +52,33 @@ func Run(BotToken string) {
             var solutionlength string
             switch data.Name {
             case "solve-maze":
-                maze, err := getMaze.GetMaze(i.ApplicationCommandData().Options[0].Value.(string))
+                messageUrl := i.ApplicationCommandData().Options[0].Value.(string);
+                message, err := s.ChannelMessage(i.ChannelID, strings.Split(messageUrl, "/")[len(strings.Split(messageUrl, "/")) - 1]);
+                mazeFiles := message.Attachments;
                 if err != nil {
-                    responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
+                    responseData = "You must provide a valid image! Provide the message link of a valid image."
                 } else {
-                    if (len(maze) < 1) {
-                        responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
+                    var maze getMaze.Maze
+                    if len(mazeFiles) < 1 {
+                        maze, err = getMaze.GetMaze(message.Content)
                     } else {
-                        points := solvemaze.FindPath(maze)
-                        if (len(points) < 1) {
-                            responseData = "You must provide an image! Select the maze, click \"open in browser\", and copy the link of the image"
+                        maze, err = getMaze.GetMaze(mazeFiles[0].URL)
+                    }
+                    if err != nil {
+                        responseData = "You must provide a valid image! Provide the message link of a valid image."
+                    } else {
+                        if (len(maze) < 1) {
+                            responseData = "You must provide a valid image! Provide the message link of a valid image."
                         } else {
-                            outputmaze.EditMaze(points, "/tmp/maze.png", "/tmp/outputmaze.png")
-                            solutionlength = strconv.Itoa(len(points))
-                            maze = nil
-                            points = nil
-            }}}}
+                            points := solvemaze.FindPath(maze)
+                            if (len(points) < 1) {
+                                responseData = "You must provide a valid image! Provide the message link of a valid image."
+                            } else {
+                                outputmaze.EditMaze(points, "/tmp/maze.png", "/tmp/outputmaze.png")
+                                solutionlength = strconv.Itoa(len(points))
+                                maze = nil
+                                points = nil
+            }}}}}
 
             if responseData == "" {
                 fileName := "/tmp/outputmaze.png"
@@ -127,7 +138,12 @@ func Run(BotToken string) {
                     } else if (len(reply.Attachments) > 1) {
                         s.ChannelMessageSendReply(m.ChannelID, "Too many images!", m.Reference())
                     } else {
-                        maze, err := getMaze.GetMaze(reply.Attachments[0].URL)
+                        var maze getMaze.Maze
+                        if len(reply.Attachments) < 1 {
+                            maze, err = getMaze.GetMaze(reply.Content)
+                        } else {
+                            maze, err = getMaze.GetMaze(reply.Attachments[0].URL)
+                        }
                         if (err != nil) {
                             s.ChannelMessageSendReply(m.ChannelID, "Send a valid maze", m.Reference())
                         } else {
