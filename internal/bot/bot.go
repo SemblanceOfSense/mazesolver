@@ -56,11 +56,18 @@ func Run(BotToken string) {
                 message, err := s.ChannelMessage(i.ChannelID, strings.Split(messageUrl, "/")[len(strings.Split(messageUrl, "/")) - 1]);
                 mazeFiles := message.Attachments;
                 if err != nil {
-                    responseData = "You must provide a valid image! Provide the message link of a valid image."
+                    fmt.Println(err)
+                    if !strings.Contains(messageUrl, "media") {
+                        responseData = "You must provide a valid image! Provide the message link of a valid image."
+                    }
                 } else {
                     var maze getMaze.Maze
                     if len(mazeFiles) < 1 {
-                        maze, err = getMaze.GetMaze(message.Content)
+                        if !strings.Contains(messageUrl, "media") {
+                            maze, err = getMaze.GetMaze(message.Content)
+                        } else {
+                            maze, err = getMaze.GetMaze(messageUrl)
+                        }
                     } else {
                         maze, err = getMaze.GetMaze(mazeFiles[0].URL)
                     }
