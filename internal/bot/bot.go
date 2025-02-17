@@ -106,6 +106,7 @@ func Run(BotToken string) {
                         responseData = err.Error()
                     }
                 }
+            }
             if responseData != "" {
                 err = s.InteractionRespond(
                     i.Interaction,
@@ -119,7 +120,7 @@ func Run(BotToken string) {
                 )
             }
         }
-    }})
+    })
 
     discord.AddHandler(func (
         s *discordgo.Session,
