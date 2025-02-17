@@ -53,6 +53,16 @@ func Run(BotToken string) {
             var solutionlength string
             switch data.Name {
             case "solve-maze":
+                err = s.InteractionRespond(
+                    i.Interaction,
+                    &discordgo.InteractionResponse{
+                        Type: discordgo.InteractionResponseChannelMessageWithSource,
+                        Data: &discordgo.InteractionResponseData{
+                            Flags: 1 << 6,
+                            Content: responseData,
+                        },
+                    },
+                )
                 messageUrl := i.ApplicationCommandData().Options[0].Value.(string);
                 if strings.Contains(messageUrl, "media.discordapp.net") {
                     messageUrl = strings.Replace(messageUrl, "media.discordapp.net", "cdn.discordapp.com", 1)
@@ -97,17 +107,15 @@ func Run(BotToken string) {
                 fileName := "/tmp/outputmaze.png"
                 f, _ := os.Open(fileName)
                 defer f.Close()
-                err = s.InteractionRespond(
+                _, err = s.FollowupMessageCreate(
                     i.Interaction,
-                    &discordgo.InteractionResponse{
-                        Type: discordgo.InteractionResponseChannelMessageWithSource,
-                        Data: &discordgo.InteractionResponseData{
+                    false,
+                    &discordgo.WebhookParams{
                                 Content: "Length of solution is: " + solutionlength,
                                 Files: []*discordgo.File{
                                 &discordgo.File{
                                     Name:  fileName,
                                     Reader: f,
-                                },
                             },
                         },
                     },
@@ -121,14 +129,12 @@ func Run(BotToken string) {
                 }
             }
             if responseData != "" {
-                err = s.InteractionRespond(
+                _, err = s.FollowupMessageCreate(
                     i.Interaction,
-                    &discordgo.InteractionResponse{
-                        Type: discordgo.InteractionResponseChannelMessageWithSource,
-                        Data: &discordgo.InteractionResponseData{
+                    false,
+                    &discordgo.WebhookParams{
                             Flags: 1 << 6,
                             Content: responseData,
-                        },
                     },
                 )
             }
