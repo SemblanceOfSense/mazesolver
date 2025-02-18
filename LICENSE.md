@@ -1,2 +1,2 @@
-Public Domain
+#Public Domain
 DO WHATEVER THE FUCK YOU WANT WITH IT. THATS IT.
