@@ -31,7 +31,7 @@ func Run(BotToken string) {
             Options: []*discordgo.ApplicationCommandOption {
                     {
                         Type: discordgo.ApplicationCommandOptionString,
-                        Name: "message-link-or-image-link",
+                        Name: "link",
                         Description: "link to maze image",
                         Required: true,
                     },
