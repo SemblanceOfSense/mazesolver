@@ -28,10 +28,10 @@ type Point struct {
 
 type Maze [][]Point
 
-func GetMaze(imagepath string) (Maze, error) {
-    returnMaze := *new(Maze)
+func GetURLMaze(imagepath string /*URL*/) (Maze, error) {
+	returnMaze := *new(Maze)
 
-    res, err := http.Get(imagepath)
+	res, err := http.Get(imagepath)
 
     if err != nil {
         return returnMaze, err
@@ -50,7 +50,14 @@ func GetMaze(imagepath string) (Maze, error) {
         return returnMaze, err
     }
 
-    imagereader, err := os.Open("/tmp/maze.png")
+	returnMaze, err = GetMaze("/tmp/maze.png")
+	return  returnMaze, err
+}
+
+func GetMaze(imagepath string /*Filepath*/) (Maze, error) {
+    returnMaze := *new(Maze)
+
+    imagereader, err := os.Open(imagepath)
     if err != nil {
         return returnMaze, err
     }

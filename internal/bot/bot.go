@@ -75,11 +75,11 @@ func Run(BotToken string) {
                     message, err := s.ChannelMessage(i.ChannelID, strings.Split(messageUrl, "/")[len(strings.Split(messageUrl, "/")) - 1]);
                     var maze getMaze.Maze
                     if strings.Contains(messageUrl, "cdn") {
-                        maze, err = getMaze.GetMaze(messageUrl)
+                        maze, err = getMaze.GetURLMaze(messageUrl)
                     } else if err == nil && len(message.Attachments) > 1 {
-                        maze, err = getMaze.GetMaze(message.Attachments[0].URL)
+                        maze, err = getMaze.GetURLMaze(message.Attachments[0].URL)
                     } else if err == nil {
-                        maze, err = getMaze.GetMaze(message.Content)
+                        maze, err = getMaze.GetURLMaze(message.Content)
                     }
                     if err != nil {
                         fmt.Println(err)
@@ -164,9 +164,9 @@ func Run(BotToken string) {
                     } else {
                         var maze getMaze.Maze
                         if len(reply.Attachments) < 1 {
-                            maze, err = getMaze.GetMaze(messageUrl)
+                            maze, err = getMaze.GetURLMaze(messageUrl)
                         } else {
-                            maze, err = getMaze.GetMaze(reply.Attachments[0].URL)
+                            maze, err = getMaze.GetURLMaze(reply.Attachments[0].URL)
                         }
                         if (err != nil) {
                             s.ChannelMessageSendReply(m.ChannelID, "Send a valid maze", m.Reference())
