@@ -36,6 +36,6 @@ func main() {
 
 		fmt.Println("Maze saved to " + newpath)
 	} else {
-		fmt.Println("Please provide a bot token or maze file!")
+		fmt.Println("Please provide a bot token with the -bottoken flag or maze file with the -path flag!")
 	}
 }
